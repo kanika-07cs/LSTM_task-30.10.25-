@@ -61,6 +61,3 @@ cd <repo>
 * This project demonstrates a complete pipeline: data preparation → model training → evaluation → deployment.
 * The Streamlit dashboard provides an **interactive interface** for exploring real-time forecasts.
 * The model can be extended for **humidity, wind speed, or energy consumption forecasting** with minimal modification.
-
-Would you like me to include the **exact `requirements.txt`** (all Python packages used in your app)?
-I can generate it next so your project runs perfectly on any system.
