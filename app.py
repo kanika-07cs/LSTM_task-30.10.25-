@@ -97,39 +97,27 @@ if uploaded_file:
 
     future_steps = st.number_input("Enter number of future time steps to predict:", min_value=1, max_value=200, value=50)
 
-    if st.button("Predict Future Temperature"):
-        last_seq = scaled_data[-LOOKBACK:]  # take last sequence
-        future_preds = []
+if st.button("Predict Future Temperature"):
+    last_seq = scaled_data[-LOOKBACK:]
+    future_preds = []
+    current_seq = last_seq.copy()
 
-        current_seq = last_seq.copy()
-        for _ in range(future_steps):
-            pred = model.predict(current_seq[np.newaxis, :, :])[0][0]
-            future_preds.append(pred)
-            # append new pred and remove oldest
-            current_seq = np.vstack([current_seq[1:], np.insert(np.zeros(current_seq.shape[1]-1), target_idx, pred)])
+    for _ in range(future_steps):
+        pred = model.predict(current_seq[np.newaxis, :, :])[0][0]
+        future_preds.append(pred)
 
-        # Inverse scale future predictions
-        inv_future = np.zeros((len(future_preds), scaled_data.shape[1]))
-        inv_future[:, target_idx] = future_preds
-        future_actual = scaler.inverse_transform(inv_future)[:, target_idx]
+        next_step = current_seq[-1].copy()
+        next_step[target_idx] = pred
+        current_seq = np.vstack([current_seq[1:], next_step])
 
-        # -------------------------
-        # DISPLAY RESULTS
-        # -------------------------
-        future_dates = pd.date_range(df['date'].iloc[-1], periods=future_steps+1, freq='h')[1:]
-        forecast_df = pd.DataFrame({'Date': future_dates, 'Predicted Temperature': future_actual})
+    # Inverse scale future predictions
+    inv_future = np.zeros((len(future_preds), scaled_data.shape[1]))
+    inv_future[:, target_idx] = future_preds
+    future_actual = scaler.inverse_transform(inv_future)[:, target_idx]
 
-        st.write("### 🔥 Future Temperature Predictions")
-        st.dataframe(forecast_df)
+    future_dates = pd.date_range(df['date'].iloc[-1], periods=future_steps+1, freq='h')[1:]
+    forecast_df = pd.DataFrame({'Date': future_dates, 'Predicted Temperature': future_actual})
 
-        fig3, ax3 = plt.subplots(figsize=(10,5))
-        ax3.plot(df['date'].iloc[-100:], df['T'].iloc[-100:], label="Past Temperature", color='blue')
-        ax3.plot(future_dates, future_actual, label="Forecasted Temperature", color='orange')
-        ax3.set_title("Future Temperature Forecast")
-        ax3.set_xlabel("Time")
-        ax3.set_ylabel("Temperature")
-        ax3.legend()
-        st.pyplot(fig3)
+    st.write("### 🔥 Future Temperature Predictions")
+    st.dataframe(forecast_df)
 
-else:
-    st.info("👆 Please upload a CSV file to begin.")
