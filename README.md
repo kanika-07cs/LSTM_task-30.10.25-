@@ -8,7 +8,6 @@ The LSTM network captures long-term temporal dependencies, making it ideal for *
 **Streamlit Link** : https://lstm-weather.streamlit.app/
 
 ## 🧾 Dataset Description
-
 The dataset contains **hourly temperature readings** along with timestamps.
 Typical structure:
 
